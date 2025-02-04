@@ -12,7 +12,8 @@ const VideoConference = () => {
   useEffect(() => {
     const createMeeting = async () => {
       try {
-        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/create-meeting`);
+        const apiUrl = `${process.env.REACT_APP_BACKEND_URL}/api/create-meeting`.replace(/([^:]\/)(\/+)/g, "$1");
+        const response = await axios.post(apiUrl);
         if (response.data && response.data.url) {
           setMeetingLink(response.data.url);
         } else {
