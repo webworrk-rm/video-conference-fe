@@ -1,31 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import Daily from '@daily-co/daily-js';
 import axios from 'axios';
 
 const VideoConference = () => {
+  const [meetingLink, setMeetingLink] = useState('');
   const [hostLink, setHostLink] = useState('');
-  const [participantLink, setParticipantLink] = useState('');
-  const [daily, setDaily] = useState(null);
+  const [roomName, setRoomName] = useState('');
+  const [waitingList, setWaitingList] = useState([]);
   const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
     const createMeeting = async () => {
       try {
-        const apiUrl = `${process.env.REACT_APP_BACKEND_URL}/api/create-meeting`.replace(/([^:]\/)(\/+)/g, "$1");
-        console.log("📡 Sending request to:", apiUrl);
-
+        const apiUrl = `${process.env.REACT_APP_BACKEND_URL}/api/create-meeting`;
         const response = await axios.post(apiUrl);
-        console.log("✅ Backend Response:", response.data);
-
-        if (response.data && response.data.participant_url) {
-          setMeetingLink(response.data.participant_url); // Use `participant_url`
-          console.log("🎥 Meeting link set:", response.data.participant_url);
+        if (response.data && response.data.url) {
+          setMeetingLink(response.data.url);
+          setHostLink(response.data.host_url);
+          setRoomName(response.data.room_name);
         } else {
-          console.error("❌ Unexpected response format:", response.data);
           throw new Error('Invalid response structure');
         }
-
-
       } catch (error) {
         console.error('❌ Error creating meeting:', error.message || error);
       }
@@ -34,37 +28,62 @@ const VideoConference = () => {
     createMeeting();
   }, []);
 
-  const joinMeeting = async (role) => {
-    let urlToJoin = role === "host" ? hostLink : participantLink;
-
-    if (!urlToJoin) {
-      console.error("❌ No meeting link available");
-      return;
-    }
-
-    const call = Daily.createCallObject();
-    setDaily(call);
-
+  const requestJoin = async () => {
     try {
-      await call.join({ url: urlToJoin });
-      console.log(`✅ Joined as ${role}`);
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/request-join`, {
+        room_name: roomName,
+        user_name: "Participant"
+      });
+      alert("Join request sent to host.");
     } catch (error) {
-      console.error(`❌ Error joining as ${role}:`, error.message || error);
+      console.error("Error requesting to join:", error);
+    }
+  };
+
+  const fetchWaitingList = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/waiting-list/${roomName}`);
+      setWaitingList(response.data.waiting_list);
+    } catch (error) {
+      console.error("Error fetching waiting list:", error);
+    }
+  };
+
+  const admitParticipant = async (userName) => {
+    try {
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/admit-participant`, {
+        room_name: roomName,
+        user_name: userName
+      });
+      alert(`${userName} has been admitted.`);
+      fetchWaitingList(); // Refresh waiting list
+    } catch (error) {
+      console.error("Error admitting participant:", error);
     }
   };
 
   return (
     <div>
       <h1>Video Conference</h1>
-      {hostLink && participantLink ? (
+      {meetingLink ? (
         <>
-          <p>🔗 <strong>Host Link:</strong> <a href={hostLink} target="_blank" rel="noopener noreferrer">{hostLink}</a></p>
-          <p>🔗 <strong>Participant Link:</strong> <a href={participantLink} target="_blank" rel="noopener noreferrer">{participantLink}</a></p>
-          <button onClick={() => joinMeeting("host")}>Join as Host</button>
-          <button onClick={() => joinMeeting("participant")}>Join as Participant</button>
+          <p><b>Host Link:</b> <a href={hostLink} target="_blank">{hostLink}</a></p>
+          <p><b>Participant Link:</b> <a href={meetingLink} target="_blank">{meetingLink}</a></p>
+          <button onClick={requestJoin}>Request to Join</button>
+          {isHost && (
+            <div>
+              <h2>Waiting List</h2>
+              {waitingList.map((p, index) => (
+                <div key={index}>
+                  <p>{p.user_name}</p>
+                  <button onClick={() => admitParticipant(p.user_name)}>Admit</button>
+                </div>
+              ))}
+            </div>
+          )}
         </>
       ) : (
-        <p>⏳ Generating meeting link...</p>
+        <p>Generating meeting link...</p>
       )}
     </div>
   );
