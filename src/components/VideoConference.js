@@ -18,11 +18,13 @@ const VideoConference = () => {
         console.log("✅ Backend Response:", response.data);
 
         if (response.data && response.data.participant_url) {
-          setMeetingLink(response.data.participant_url); // Show the participant link
+          setMeetingLink(response.data.participant_url); // Use `participant_url`
           console.log("🎥 Meeting link set:", response.data.participant_url);
         } else {
+          console.error("❌ Unexpected response format:", response.data);
           throw new Error('Invalid response structure');
         }
+
 
       } catch (error) {
         console.error('❌ Error creating meeting:', error.message || error);
