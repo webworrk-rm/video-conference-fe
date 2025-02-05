@@ -17,12 +17,13 @@ const VideoConference = () => {
         const response = await axios.post(apiUrl);
         console.log("✅ Backend Response:", response.data);
 
-        if (response.data && response.data.host_url && response.data.participant_url) {
-          setHostLink(response.data.host_url);
-          setParticipantLink(response.data.participant_url);
+        if (response.data && response.data.participant_url) {
+          setMeetingLink(response.data.participant_url); // Show the participant link
+          console.log("🎥 Meeting link set:", response.data.participant_url);
         } else {
-          throw new Error(`Invalid response structure: ${JSON.stringify(response.data)}`);
+          throw new Error('Invalid response structure');
         }
+
       } catch (error) {
         console.error('❌ Error creating meeting:', error.message || error);
       }
