@@ -13,14 +13,18 @@ const VideoConference = () => {
     const createMeeting = async () => {
       try {
         const apiUrl = `${process.env.REACT_APP_BACKEND_URL}/api/create-meeting`.replace(/([^:]\/)(\/+)/g, "$1");
+        console.log("📡 Sending request to:", apiUrl);
+
         const response = await axios.post(apiUrl);
+        console.log("✅ Backend Response:", response.data);
+
         if (response.data && response.data.url) {
           setMeetingLink(response.data.url);
         } else {
           throw new Error('Invalid response structure');
         }
       } catch (error) {
-        console.error('Error creating meeting:', error.message || error);
+        console.error('❌ Error creating meeting:', error.message || error);
       }
     };
 
@@ -35,7 +39,7 @@ const VideoConference = () => {
       await call.join({ url: meetingLink });
       call.on('participant-updated', handleParticipantsUpdate);
     } catch (error) {
-      console.error('Error joining meeting:', error.message || error);
+      console.error('❌ Error joining meeting:', error.message || error);
     }
   };
 
