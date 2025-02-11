@@ -7,7 +7,7 @@ const App = () => {
   const [jitsiApi, setJitsiApi] = useState(null);
 
   // API URL (Replace with your Render backend URL)
-  const API_URL = "https://your-backend-url.onrender.com";
+  const API_URL = "https://video-conference-be-vhdh.onrender.com";
 
   // Instant Meeting
   const startInstantMeeting = async () => {
