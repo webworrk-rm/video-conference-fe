@@ -6,9 +6,12 @@ const App = () => {
   const [meeting, setMeeting] = useState(null);
   const [jitsiApi, setJitsiApi] = useState(null);
 
+  // API URL (Replace with your Render backend URL)
+  const API_URL = "https://your-backend-url.onrender.com";
+
   // Instant Meeting
   const startInstantMeeting = async () => {
-    const response = await axios.post("https://your-backend-url.onrender.com/create-meeting", {});
+    const response = await axios.post(`${API_URL}/create-meeting`, {});
     setMeeting(response.data);
   };
 
@@ -30,7 +33,7 @@ const App = () => {
     <div className="container">
       <h1>Video Conferencing App</h1>
       <button onClick={startInstantMeeting}>Start Instant Meeting</button>
-      
+
       {meeting && (
         <div>
           <button onClick={toggleChat}>Toggle Chat</button>
